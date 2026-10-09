@@ -1,0 +1,63 @@
+package br.com.sistemas.chamados.service;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import br.com.sistemas.chamados.dto.CategoriaRequest;
+import br.com.sistemas.chamados.dto.CategoriaResponse;
+import br.com.sistemas.chamados.dto.ClienteRequest;
+import br.com.sistemas.chamados.dto.ClienteResponse;
+import br.com.sistemas.chamados.entity.Categoria;
+import br.com.sistemas.chamados.entity.Cliente;
+import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
+import br.com.sistemas.chamados.exception.RegraNegocioException;
+import br.com.sistemas.chamados.repository.CategoriaRepository;
+import br.com.sistemas.chamados.repository.ClienteRepository;
+
+
+@Service
+public class CategoriaService {
+    
+    private final CategoriaRepository repository;
+
+    public CategoriaService(CategoriaRepository repository) {
+        this.repository = repository;
+    }
+
+    @Transactional
+    public CategoriaResponse criar(CategoriaRequest dto) {
+        Categoria salvo = repository.save(new Categoria(dto.nome(), dto.descricao()));
+        return CategoriaResponse.de(salvo);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategoriaResponse> listar() {
+        return repository.findAll().stream().map(CategoriaResponse::de).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public CategoriaResponse buscar(Long id) {
+        return CategoriaResponse.de(buscarEntity(id));
+    }
+
+    @Transactional
+    public CategoriaResponse atualizar(Long id, CategoriaRequest dto){
+        Categoria categoria = buscarEntity(id);
+        categoria.setNome(dto.nome());
+        categoria.setEmail(dto.descricao());
+        return CategoriaResponse.de(categoria);
+    }
+
+    @Transactional
+    public void excluir(Long id) {
+        repository.delete(buscarEntity(id));
+    }
+
+    private Categoria buscarEntity(Long id) {
+        return repository.findById(id)
+            .orElseThrow(() -> new RecursoNaoEncontradoException(
+                "Categoria " + id + " não encontrada"));
+    }
+}
