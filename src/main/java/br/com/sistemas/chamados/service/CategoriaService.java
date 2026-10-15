@@ -7,15 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.com.sistemas.chamados.dto.CategoriaRequest;
 import br.com.sistemas.chamados.dto.CategoriaResponse;
-import br.com.sistemas.chamados.dto.ClienteRequest;
-import br.com.sistemas.chamados.dto.ClienteResponse;
 import br.com.sistemas.chamados.entity.Categoria;
-import br.com.sistemas.chamados.entity.Cliente;
 import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
-import br.com.sistemas.chamados.exception.RegraNegocioException;
 import br.com.sistemas.chamados.repository.CategoriaRepository;
-import br.com.sistemas.chamados.repository.ClienteRepository;
-
 
 @Service
 public class CategoriaService {
@@ -46,7 +40,7 @@ public class CategoriaService {
     public CategoriaResponse atualizar(Long id, CategoriaRequest dto){
         Categoria categoria = buscarEntity(id);
         categoria.setNome(dto.nome());
-        categoria.setEmail(dto.descricao());
+        categoria.setDescricao(dto.descricao());
         return CategoriaResponse.de(categoria);
     }
 
