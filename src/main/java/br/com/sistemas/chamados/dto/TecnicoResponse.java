@@ -1,8 +1,9 @@
 package br.com.sistemas.chamados.dto;
 
 import br.com.sistemas.chamados.entity.Tecnico;
+import br.com.sistemas.chamados.enums.TecnicoPerfil;
 
-public record TecnicoResponse (Long id, String nome, String email, String perfil) {
+public record TecnicoResponse (Long id, String nome, String email, TecnicoPerfil perfil) {
     public static TecnicoResponse de(Tecnico t) {
         return new TecnicoResponse(t.getId(), t.getNome(), t.getEmail(), t.getPerfil());
     }

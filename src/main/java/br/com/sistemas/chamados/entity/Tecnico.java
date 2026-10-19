@@ -1,7 +1,10 @@
 package br.com.sistemas.chamados.entity;
 
+import br.com.sistemas.chamados.enums.TecnicoPerfil;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,16 +16,17 @@ public class Tecnico {
     @Id 
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
-    @Column
+    @Column(nullable = false, length = 100)
     private String nome;
-    @Column
+    @Column(nullable = false, length = 120, unique = true)
     private String email;
-    @Column
-    private String perfil;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TecnicoPerfil perfil;
 
     public Tecnico(){}
 
-    public Tecnico(String nome, String email, String perfil){
+    public Tecnico(String nome, String email, TecnicoPerfil perfil){
         this.nome = nome;
         this.email = email;
         this.perfil = perfil;
@@ -48,11 +52,11 @@ public class Tecnico {
         this.email = email;
     }
 
-    public String getPerfil() {
+    public TecnicoPerfil getPerfil() {
         return perfil;
     }
 
-    public void setPerfil(String perfil) {
+    public void setPerfil(TecnicoPerfil perfil) {
         this.perfil = perfil;
     }
 }

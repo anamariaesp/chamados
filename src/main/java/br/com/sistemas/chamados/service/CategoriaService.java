@@ -9,6 +9,7 @@ import br.com.sistemas.chamados.dto.CategoriaRequest;
 import br.com.sistemas.chamados.dto.CategoriaResponse;
 import br.com.sistemas.chamados.entity.Categoria;
 import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
+import br.com.sistemas.chamados.exception.RegraNegocioException;
 import br.com.sistemas.chamados.repository.CategoriaRepository;
 
 @Service
@@ -22,6 +23,9 @@ public class CategoriaService {
 
     @Transactional
     public CategoriaResponse criar(CategoriaRequest dto) {
+        if (repository.existsByNome(dto.nome())) {
+            throw new RegraNegocioException("Já existe categoria com o nome "+ dto.nome());
+        }
         Categoria salvo = repository.save(new Categoria(dto.nome(), dto.descricao()));
         return CategoriaResponse.de(salvo);
     }
@@ -38,6 +42,9 @@ public class CategoriaService {
 
     @Transactional
     public CategoriaResponse atualizar(Long id, CategoriaRequest dto){
+        if (repository.existsByNomeAndIdNot(dto.nome(), id)) {
+            throw new RegraNegocioException("Já existe categoria com o nome "+ dto.nome());
+        }
         Categoria categoria = buscarEntity(id);
         categoria.setNome(dto.nome());
         categoria.setDescricao(dto.descricao());

@@ -19,13 +19,13 @@ public class Chamado {
     private Long id;
     @ManyToOne 
     @JoinColumn (name = "cliente_id", nullable =  false)
-    private Long cliente_id;
+    private Cliente cliente_id;
     @ManyToOne 
     @JoinColumn (name = "categoria_id", nullable =  false)
-    private Long categoria_id;
+    private Categoria categoria_id;
     @ManyToOne 
     @JoinColumn (name = "tecnico_id", nullable =  false)
-    private Long tecnico_id;
+    private Tecnico tecnico_id;
     @Column
     private String titulo;
     @Column
@@ -41,7 +41,7 @@ public class Chamado {
 
     public Chamado(){}
 
-    public Chamado(Long cliente_id, Long categoria_id, Long tecnico_id, String titulo, String descricao, LocalDate data_abertura, LocalDate data_fechamento, String prioridade, String status
+    public Chamado(Cliente cliente_id, Categoria categoria_id, Tecnico tecnico_id, String titulo, String descricao, LocalDate data_abertura, LocalDate data_fechamento, String prioridade, String status
     ) {
         this.cliente_id = cliente_id;
         this.categoria_id = categoria_id;
@@ -58,27 +58,27 @@ public class Chamado {
         return id;
     }
 
-    public Long getCliente_id() {
+    public Cliente getCliente_id() {
         return cliente_id;
     }
 
-    public void setCliente_id(Long cliente_id) {
+    public void setCliente_id(Cliente cliente_id) {
         this.cliente_id = cliente_id;
     }
 
-    public Long getCategoria_id() {
+    public Categoria getCategoria_id() {
         return categoria_id;
     }
 
-    public void setCategoria_id(Long categoria_id) {
+    public void setCategoria_id(Categoria categoria_id) {
         this.categoria_id = categoria_id;
     }
 
-    public Long getTecnico_id() {
+    public Tecnico getTecnico_id() {
         return tecnico_id;
     }
 
-    public void setTecnico_id(Long tecnico_id) {
+    public void setTecnico_id(Tecnico tecnico_id) {
         this.tecnico_id = tecnico_id;
     }
 

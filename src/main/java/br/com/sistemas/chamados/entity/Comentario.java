@@ -20,7 +20,7 @@ public class Comentario {
     private Long id;
     @ManyToOne 
     @JoinColumn (name = "chamado_id", nullable =  false)
-    private Long chamado_id;
+    private Chamado chamado_id;
     @Column
     private String texto;
     @Column
@@ -30,7 +30,7 @@ public class Comentario {
 
     public Comentario(){}
 
-    public Comentario(Long chamado_id, String texto, LocalDate data, String autor) {
+    public Comentario(Chamado chamado_id, String texto, LocalDate data, String autor) {
         this.chamado_id = chamado_id;
         this.texto = texto;
         this.data = data;
@@ -41,19 +41,35 @@ public class Comentario {
         return id;
     }
 
-    public String getNome() {
-        return nome;
+    public Chamado getChamadoId() {
+        return chamado_id;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
+    public void setChamadoId(Chamado chamado_id) {
+        this.chamado_id = chamado_id;
     }
 
-    public String getDescricao() {
-        return descricao;
+    public String getTexto() {
+        return texto;
     }
 
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
+    public void setTexto(String texto) {
+        this.texto = texto;
+    }
+
+    public LocalDate getData() {
+        return data;
+    }
+
+    public void setData(LocalDate data) {
+        this.data = data;
+    }
+
+    public String getAutor() {
+        return autor;
+    }
+
+    public void setAutor(String autor) {
+        this.autor = autor;
     }
 }
