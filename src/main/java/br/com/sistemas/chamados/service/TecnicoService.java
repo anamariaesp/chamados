@@ -5,10 +5,12 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.com.sistemas.chamados.enums.TecnicoPerfil;
 import br.com.sistemas.chamados.dto.TecnicoRequest;
 import br.com.sistemas.chamados.dto.TecnicoResponse;
 import br.com.sistemas.chamados.entity.Tecnico;
 import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
+import br.com.sistemas.chamados.exception.RegraNegocioException;
 import br.com.sistemas.chamados.repository.TecnicoRepository;
 
 @Service
@@ -22,7 +24,10 @@ public class TecnicoService {
 
     @Transactional
     public TecnicoResponse criar(TecnicoRequest dto) {
-        Tecnico salvo = repository.save(new Tecnico(dto.nome(), dto.email(), dto.perfil()));
+        if (repository.existsByEmail(dto.email())) {
+            throw new RegraNegocioException("Já existe técnico com o e-mail "+ dto.email());
+        }
+        Tecnico salvo = repository.save(new Tecnico(dto.nome(), dto.email(), TecnicoPerfil.valueOf(dto.perfil())));
         return TecnicoResponse.de(salvo);
     }
 
@@ -39,9 +44,12 @@ public class TecnicoService {
     @Transactional
     public TecnicoResponse atualizar(Long id, TecnicoRequest dto){
         Tecnico tecnico = buscarEntity(id);
+        if (repository.existsByEmailAndIdNot(dto.email(), id)) {
+            throw new RegraNegocioException("Já existe técnico com o e-mail "+ dto.email());
+        }
         tecnico.setNome(dto.nome());
         tecnico.setEmail(dto.email());
-        tecnico.setPerfil(dto.perfil());
+        tecnico.setPerfil(TecnicoPerfil.valueOf(dto.perfil()));
         return TecnicoResponse.de(tecnico);
     }
 
