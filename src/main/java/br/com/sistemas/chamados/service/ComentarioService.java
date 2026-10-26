@@ -9,7 +9,6 @@ import br.com.sistemas.chamados.dto.ComentarioRequest;
 import br.com.sistemas.chamados.dto.ComentarioResponse;
 import br.com.sistemas.chamados.entity.Comentario;
 import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
-import br.com.sistemas.chamados.exception.RegraNegocioException;
 import br.com.sistemas.chamados.repository.ComentarioRepository;
 
 
@@ -24,7 +23,7 @@ public class ComentarioService {
 
     @Transactional
     public ComentarioResponse criar(ComentarioRequest dto) {
-        Comentario salvo = repository.save(new Comentario(dto.chamado_id(), dto.texto(), dto.data(), dto.autor()));
+        Comentario salvo = repository.save(new Comentario(dto.chamado(), dto.texto(), dto.data(), dto.autor()));
         return ComentarioResponse.de(salvo);
     }
 
@@ -41,7 +40,7 @@ public class ComentarioService {
     @Transactional
     public ComentarioResponse atualizar(Long id, ComentarioRequest dto){
         Comentario comentario = buscarEntity(id);
-        comentario.setChamadoId(dto.chamado_id());
+        comentario.setChamado(dto.chamado());
         comentario.setTexto(dto.texto());
         comentario.setData(dto.data());
         comentario.setAutor(dto.autor());

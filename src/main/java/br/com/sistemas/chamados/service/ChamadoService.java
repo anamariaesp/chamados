@@ -2,6 +2,8 @@ package br.com.sistemas.chamados.service;
 
 import java.util.List;
 
+import br.com.sistemas.chamados.enums.ChamadoPrioridade;
+import br.com.sistemas.chamados.enums.StatusChamado;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +24,7 @@ public class ChamadoService {
 
     @Transactional
     public ChamadoResponse criar(ChamadoRequest dto) {
-        Chamado salvo = repository.save(new Chamado(dto.cliente_id(), dto.categoria_id(), dto.tecnico_id(), dto.titulo(), dto.descricao(), dto.data_abertura(), dto.data_fechamento(), dto.prioridade(), dto.status()));
+        Chamado salvo = repository.save(new Chamado(dto.cliente(), dto.categoria(), dto.tecnico(), dto.titulo(), dto.descricao(), dto.data_abertura(), dto.data_fechamento(), dto.prioridade(), dto.status()));
         return ChamadoResponse.de(salvo);
     }
 
@@ -39,9 +41,9 @@ public class ChamadoService {
     @Transactional
     public ChamadoResponse atualizar(Long id, ChamadoRequest dto){
         Chamado chamado = buscarEntity(id);
-        chamado.setCliente_id(dto.cliente_id());
-        chamado.setCategoria_id(dto.categoria_id());
-        chamado.setTecnico_id(dto.tecnico_id());
+        chamado.setCliente(dto.cliente());
+        chamado.setCategoria(dto.categoria());
+        chamado.setTecnico(dto.tecnico());
         chamado.setTitulo(dto.titulo());
         chamado.setDescricao(dto.descricao());
         chamado.setData_abertura(dto.data_abertura());

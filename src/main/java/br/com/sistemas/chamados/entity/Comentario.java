@@ -19,19 +19,19 @@ public class Comentario {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
     @ManyToOne 
-    @JoinColumn (name = "chamado_id", nullable =  false)
-    private Chamado chamado_id;
-    @Column
+    @JoinColumn (name = "chamado", nullable =  false)
+    private Chamado chamado;
+    @Column(nullable = false)
     private String texto;
-    @Column
+    @Column(nullable = false)
     private LocalDate data;
-    @Column 
+    @Column (nullable = false)
     private String autor;
 
     public Comentario(){}
 
-    public Comentario(Chamado chamado_id, String texto, LocalDate data, String autor) {
-        this.chamado_id = chamado_id;
+    public Comentario(Chamado chamado, String texto, LocalDate data, String autor) {
+        this.chamado = chamado;
         this.texto = texto;
         this.data = data;
         this.autor = autor;
@@ -41,12 +41,12 @@ public class Comentario {
         return id;
     }
 
-    public Chamado getChamadoId() {
-        return chamado_id;
+    public Chamado getChamado() {
+        return chamado;
     }
 
-    public void setChamadoId(Chamado chamado_id) {
-        this.chamado_id = chamado_id;
+    public void setChamado(Chamado chamado) {
+        this.chamado = chamado;
     }
 
     public String getTexto() {
