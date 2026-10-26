@@ -14,9 +14,9 @@ public class Categoria {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
-    @Column
+    @Column(nullable = false, length = 100, unique = true)
     private String nome;
-    @Column
+    @Column(nullable = false, length = 200)
     private String descricao;
 
     public Categoria(){}
