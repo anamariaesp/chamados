@@ -2,8 +2,12 @@ package br.com.sistemas.chamados.entity;
 
 import java.time.LocalDate;
 
+import br.com.sistemas.chamados.enums.ChamadoPrioridade;
+import br.com.sistemas.chamados.enums.StatusChamado;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,37 +22,39 @@ public class Chamado {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
     @ManyToOne 
-    @JoinColumn (name = "cliente_id", nullable =  false)
-    private Cliente cliente_id;
+    @JoinColumn (name = "cliente", nullable =  false)
+    private Cliente cliente;
     @ManyToOne 
-    @JoinColumn (name = "categoria_id", nullable =  false)
-    private Categoria categoria_id;
+    @JoinColumn (name = "categoria", nullable =  false)
+    private Categoria categoria;
     @ManyToOne 
-    @JoinColumn (name = "tecnico_id", nullable =  false)
-    private Tecnico tecnico_id;
-    @Column
+    @JoinColumn (name = "tecnico", nullable =  false)
+    private Tecnico tecnico;
+    @Column(nullable = false, length = 100)
     private String titulo;
-    @Column
+    @Column(nullable = false)
     private String descricao;
-    @Column
+    @Column(nullable = false)
     private LocalDate data_abertura;
     @Column
     private LocalDate data_fechamento;
-    @Column
-    private String prioridade;
-    @Column
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable=false)
+    private ChamadoPrioridade prioridade;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable=false)
+    private StatusChamado status;
 
     public Chamado(){}
 
-    public Chamado(Cliente cliente_id, Categoria categoria_id, Tecnico tecnico_id, String titulo, String descricao, LocalDate data_abertura, LocalDate data_fechamento, String prioridade, String status
+    public Chamado(Cliente cliente, Categoria categoria, Tecnico tecnico, String titulo, String descricao, LocalDate data_abertura, LocalDate data_fechamento, ChamadoPrioridade prioridade, StatusChamado status
     ) {
-        this.cliente_id = cliente_id;
-        this.categoria_id = categoria_id;
-        this.tecnico_id = tecnico_id;
+        this.cliente = cliente;
+        this.categoria = categoria;
+        this.tecnico = tecnico;
         this.titulo = titulo;
         this.descricao = descricao;
-        this.data_abertura = data_abertura;        
+        this.data_abertura = data_abertura;
         this.data_fechamento = data_fechamento;
         this.prioridade = prioridade;
         this.status = status;
@@ -58,28 +64,28 @@ public class Chamado {
         return id;
     }
 
-    public Cliente getCliente_id() {
-        return cliente_id;
+    public Cliente getCliente() {
+        return cliente;
     }
 
-    public void setCliente_id(Cliente cliente_id) {
-        this.cliente_id = cliente_id;
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
     }
 
-    public Categoria getCategoria_id() {
-        return categoria_id;
+    public Categoria getCategoria() {
+        return categoria;
     }
 
-    public void setCategoria_id(Categoria categoria_id) {
-        this.categoria_id = categoria_id;
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
     }
 
-    public Tecnico getTecnico_id() {
-        return tecnico_id;
+    public Tecnico getTecnico() {
+        return tecnico;
     }
 
-    public void setTecnico_id(Tecnico tecnico_id) {
-        this.tecnico_id = tecnico_id;
+    public void setTecnico(Tecnico tecnico) {
+        this.tecnico = tecnico;
     }
 
     public String getTitulo() {
@@ -114,19 +120,19 @@ public class Chamado {
         this.data_fechamento = data_fechamento;
     }
 
-    public String getPrioridade() {
+    public ChamadoPrioridade getPrioridade() {
         return prioridade;
     }
 
-    public void setPrioridade(String prioridade) {
+    public void setPrioridade(ChamadoPrioridade prioridade) {
         this.prioridade = prioridade;
     }
 
-    public String getStatus() {
+    public StatusChamado getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(StatusChamado status) {
         this.status = status;
     }
 }
