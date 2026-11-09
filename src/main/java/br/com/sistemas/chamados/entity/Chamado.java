@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "chamado")
@@ -45,7 +46,7 @@ public class Chamado {
     @Column(nullable=false)
     private StatusChamado status;
 
-    public Chamado(){}
+    public Chamado(@NotBlank(message = "Titulo é obrigatório") String titulo, @NotBlank(message = "Descrição é obrigatória") String descricao, @NotBlank(message = "Prioridade é obrigatória") ChamadoPrioridade prioridade, Cliente cliente, Categoria categoria){}
 
     public Chamado(Cliente cliente, Categoria categoria, Tecnico tecnico, String titulo, String descricao, LocalDate data_abertura, LocalDate data_fechamento, ChamadoPrioridade prioridade, StatusChamado status
     ) {
@@ -58,6 +59,10 @@ public class Chamado {
         this.data_fechamento = data_fechamento;
         this.prioridade = prioridade;
         this.status = status;
+    }
+
+    public Chamado() {
+
     }
 
     public Long getId() {

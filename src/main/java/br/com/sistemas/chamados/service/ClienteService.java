@@ -12,10 +12,9 @@ import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
 import br.com.sistemas.chamados.exception.RegraNegocioException;
 import br.com.sistemas.chamados.repository.ClienteRepository;
 
-
 @Service
 public class ClienteService {
-    
+
     private final ClienteRepository repository;
 
     public ClienteService(ClienteRepository repository) {
@@ -25,7 +24,7 @@ public class ClienteService {
     @Transactional
     public ClienteResponse criar(ClienteRequest dto) {
         if (repository.existsByEmail(dto.email())) {
-            throw new RegraNegocioException("Já existe cliente com o e-mail "+ dto.email());
+            throw new RegraNegocioException("Já existe cliente com o e-mail " + dto.email());
         }
         Cliente salvo = repository.save(new Cliente(dto.nome(), dto.email(), dto.telefone()));
         return ClienteResponse.de(salvo);
@@ -42,10 +41,10 @@ public class ClienteService {
     }
 
     @Transactional
-    public ClienteResponse atualizar(Long id, ClienteRequest dto){
+    public ClienteResponse atualizar(Long id, ClienteRequest dto) {
         Cliente cliente = buscarEntity(id);
         if (repository.existsByEmailAndIdNot(dto.email(), id)) {
-            throw new RegraNegocioException("Já existe cliente com o e-mail "+ dto.email());
+            throw new RegraNegocioException("Já existe cliente com o e-mail " + dto.email());
         }
         cliente.setNome(dto.nome());
         cliente.setEmail(dto.email());
@@ -58,9 +57,9 @@ public class ClienteService {
         repository.delete(buscarEntity(id));
     }
 
-    private Cliente buscarEntity(Long id) {
+    Cliente buscarEntity(Long id) {
         return repository.findById(id)
-            .orElseThrow(() -> new RecursoNaoEncontradoException(
-                "Cliente " + id + " não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException(
+                        "Cliente " + id + " não encontrado"));
     }
 }
