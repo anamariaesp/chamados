@@ -58,7 +58,7 @@ public class TecnicoService {
         repository.delete(buscarEntity(id));
     }
 
-    private Tecnico buscarEntity(Long id) {
+    Tecnico buscarEntity(Long id) {
         return repository.findById(id)
             .orElseThrow(() -> new RecursoNaoEncontradoException(
                 "Tecnico " + id + " não encontrada"));
