@@ -43,7 +43,7 @@ public class ChamadoService {
     }
 
     @Transactional(readOnly = true)
-    public ChamadoResponse buscar(Long id) {
+    public ChamadoDetalheResponse buscar(Long id) {
         Chamado chamado = buscarEntity(id);
         List<ComentarioResponse> comentarios = comentarioRepository
                 .findByChamadoIdOrderByDataAsc(id).stream()

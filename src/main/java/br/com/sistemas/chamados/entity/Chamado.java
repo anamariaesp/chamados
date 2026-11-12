@@ -28,8 +28,8 @@ public class Chamado {
     @ManyToOne 
     @JoinColumn (name = "categoria", nullable =  false)
     private Categoria categoria;
-    @ManyToOne 
-    @JoinColumn (name = "tecnico", nullable =  false)
+    @ManyToOne
+    @JoinColumn (name = "tecnico")
     private Tecnico tecnico;
     @Column(nullable = false, length = 100)
     private String titulo;
@@ -46,7 +46,16 @@ public class Chamado {
     @Column(nullable=false)
     private StatusChamado status;
 
-    public Chamado(@NotBlank(message = "Titulo é obrigatório") String titulo, @NotBlank(message = "Descrição é obrigatória") String descricao, @NotBlank(message = "Prioridade é obrigatória") ChamadoPrioridade prioridade, Cliente cliente, Categoria categoria){}
+    public Chamado(String titulo, String descricao, ChamadoPrioridade prioridade,
+                   Cliente cliente, Categoria categoria) {
+        this.titulo = titulo;
+        this.descricao = descricao;
+        this.prioridade = prioridade;
+        this.cliente = cliente;
+        this.categoria = categoria;
+        this.status = StatusChamado.ABERTO;
+        this.data_abertura = LocalDate.now();
+    }
 
     public Chamado(Cliente cliente, Categoria categoria, Tecnico tecnico, String titulo, String descricao, LocalDate data_abertura, LocalDate data_fechamento, ChamadoPrioridade prioridade, StatusChamado status
     ) {
@@ -55,10 +64,10 @@ public class Chamado {
         this.tecnico = tecnico;
         this.titulo = titulo;
         this.descricao = descricao;
-        this.data_abertura = data_abertura;
+        this.data_abertura = LocalDate.now();
         this.data_fechamento = data_fechamento;
         this.prioridade = prioridade;
-        this.status = status;
+        this.status = StatusChamado.ABERTO;
     }
 
     public Chamado() {

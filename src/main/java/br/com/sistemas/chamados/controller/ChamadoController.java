@@ -2,15 +2,12 @@ package br.com.sistemas.chamados.controller;
 
 import java.net.URI;
 
+import br.com.sistemas.chamados.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import br.com.sistemas.chamados.dto.AtribuirRequest;
-import br.com.sistemas.chamados.dto.ChamadoRequest;
-import br.com.sistemas.chamados.dto.ChamadoResponse;
-import br.com.sistemas.chamados.dto.StatusRequest;
 import br.com.sistemas.chamados.enums.ChamadoPrioridade;
 import br.com.sistemas.chamados.enums.StatusChamado;
 import br.com.sistemas.chamados.service.ChamadoService;
@@ -42,7 +39,7 @@ public class ChamadoController {
     }
 
     @GetMapping("/{id}")
-    public ChamadoResponse buscar(@PathVariable Long id) {
+    public ChamadoDetalheResponse buscar(@PathVariable Long id) {
         return service.buscar(id);
     }
 
