@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sistema de Chamados</title>
+<style>
+:root{--bg:#eef1f4;--ink:#1c2733;--mute:#5d6b7a;--line:#d5dce3;--brand:#0f5c4d;--bad:#b3261e}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 system-ui,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);display:grid;grid-template-columns:210px 1fr;min-height:100vh}
+nav{background:#14272e;color:#cfe0dc;padding:20px 12px;position:sticky;top:0;height:100vh}
+nav b{display:block;color:#fff;font-size:17px;margin:0 8px 18px}
+nav a{display:block;padding:8px 10px;border-radius:6px;color:inherit;text-decoration:none}
+nav a.on,nav a:hover{background:#21414a;color:#fff}
+main{padding:28px;max-width:1000px;width:100%}
+h1{margin:0 0 16px;font-size:22px}h2{margin:0 0 12px;font-size:17px}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:16px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+th{color:var(--mute);font-weight:600;font-size:13px}
+input,select,textarea,button{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:#fff;color:inherit}
+label{display:block;margin-bottom:10px;font-size:13px;color:var(--mute)}
+label>*{display:block;width:100%;margin-top:3px;color:var(--ink)}
+button{cursor:pointer}button.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+button.d{color:var(--bad)}button:disabled,select:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+.g{display:grid;gap:16px}.g2{grid-template-columns:1.6fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}.row label{margin:0;flex:1;min-width:130px}
+.mute{color:var(--mute)}
+.chip{padding:2px 8px;border-radius:99px;font-size:12px;background:#e3e8ee}
+.ABERTO{background:#dbeafe;color:#1e40af}.EM_ATENDIMENTO,.ALTA{background:#fde9c8;color:#8a4b00}
+.AGUARDANDO_CLIENTE{background:#e9e3f7;color:#52368f}.FECHADO{background:#dcefe3;color:#1d5a35}
+.CRITICA{background:#fbdcd9;color:var(--bad)}
+a.stat{border-left:4px solid var(--brand);color:inherit;text-decoration:none}a.stat b{font-size:28px;display:block}
+#t{position:fixed;right:16px;bottom:16px;background:#14272e;color:#fff;padding:10px 14px;border-radius:8px;display:none;max-width:360px}
+#t.bad{background:var(--bad)}
+@media(max-width:760px){body{grid-template-columns:1fr}nav{position:static;height:auto;display:flex;flex-wrap:wrap}.g2,.g4{grid-template-columns:1fr 1fr}}
+</style></head>
+<body>
+<nav><b>Chamados</b><a href="#painel">Painel</a><a href="#chamados">Chamados</a><a href="#clientes">Clientes</a><a href="#categorias">Categorias</a><a href="#tecnicos">Técnicos</a></nav>
+<main id="m"></main><div id="t" role="status"></div>
+<script>
+const $=s=>document.querySelector(s),M=$('#m');
+const E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const J=(m,b)=>({method:m,body:JSON.stringify(b)});
+async function api(p,o){
+  const r=await fetch(p,{headers:{'Content-Type':'application/json'},...o});
+  if(!r.ok){let e={};try{e=await r.json()}catch{}throw new Error([e.erro||'Erro '+r.status,...(e.detalhes||[])].join('; '))}
+  return r.status==204?null:r.json()}
+function toast(m,bad){const t=$('#t');t.textContent=m;t.className=bad?'bad':'';t.style.display='block';setTimeout(()=>t.style.display='none',4000)}
+const chip=v=>`<span class="chip ${v}">${E(String(v||'').replace('_',' '))}</span>`;
+const opts=(a,sel,fn)=>a.map(x=>{const v=x.id??x;return `<option value="${E(v)}"${v==sel?' selected':''}>${E(fn?fn(x):x)}</option>`}).join('');
+const ST=['ABERTO','EM_ATENDIMENTO','AGUARDANDO_CLIENTE','FECHADO'],PR=['BAIXA','MEDIA','ALTA','CRITICA'];
+
+/* Painel */
+async function dash(){
+  const [ts,cl,tc,ct]=await Promise.all([Promise.all(ST.map(s=>api('/chamados?size=1&status='+s))),api('/clientes'),api('/tecnicos'),api('/categorias')]);
+  M.innerHTML=`<h1>Painel</h1><div class="g g4">${ST.map((s,i)=>`<a class="card stat" href="#chamados" data-s="${s}">${chip(s)}<b>${ts[i].totalElements}</b>chamados</a>`).join('')}</div>
+  <div class="card"><p>${cl.length} clientes, ${ct.length} categorias e ${tc.length} técnicos cadastrados.</p></div>`;
+  M.querySelectorAll('[data-s]').forEach(a=>a.onclick=()=>{Q.status=a.dataset.s;Q.page=0})}
+
+/* CRUD genérico: clientes, categorias, técnicos */
+const RES={
+  clientes:{t:'Clientes',f:[['nome','Nome'],['email','E-mail','email'],['telefone','Telefone']]},
+  categorias:{t:'Categorias',f:[['nome','Nome'],['descricao','Descrição']]},
+  tecnicos:{t:'Técnicos',f:[['nome','Nome'],['email','E-mail','email'],['perfil','Perfil','select',['TECNICO','ADMIN']]]}};
+async function crud(k){
+  const R=RES[k];let rows=await api('/'+k),ed=null;
+  const draw=()=>{
+    M.innerHTML=`<h1>${R.t}</h1><div class="g g2"><div class="card"><table><tr>${R.f.map(f=>`<th>${f[1]}</th>`).join('')}<th></th></tr>
+    ${rows.map(r=>`<tr>${R.f.map(f=>`<td>${E(r[f[0]])}</td>`).join('')}<td><button data-e="${r.id}">Editar</button> <button class="d" data-d="${r.id}">Excluir</button></td></tr>`).join('')||'<tr><td>Nada cadastrado ainda.</td></tr>'}</table></div>
+    <div class="card"><h2>${ed?'Editar registro':'Novo registro'}</h2><form id="f">${R.f.map(([n,l,t,o])=>`<label>${l}${t=='select'?`<select name="${n}">${opts(o,ed?.[n])}</select>`:`<input name="${n}" type="${t||'text'}" value="${E(ed?.[n])}"${n=='telefone'?'':' required'}>`}</label>`).join('')}
+    <div class="row"><button class="p">Salvar</button>${ed?'<button type="button" id="x">Cancelar</button>':''}</div></form></div></div>`;
+    $('#f').onsubmit=async e=>{e.preventDefault();const b=Object.fromEntries(new FormData(e.target));
+      try{await api('/'+k+(ed?'/'+ed.id:''),J(ed?'PUT':'POST',b));toast('Salvo');rows=await api('/'+k);ed=null;draw()}catch(x){toast(x.message,1)}};
+    if($('#x'))$('#x').onclick=()=>{ed=null;draw()};
+    M.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{ed=rows.find(r=>r.id==b.dataset.e);draw()});
+    M.querySelectorAll('[data-d]').forEach(b=>b.onclick=async()=>{
+      if(!confirm('Excluir este registro?'))return;
+      try{await api('/'+k+'/'+b.dataset.d,{method:'DELETE'});rows=await api('/'+k);draw()}catch(x){toast(x.message,1)}})};
+  draw()}
+
+/* Lista de chamados: filtros, paginação e novo chamado */
+const Q={status:'',prioridade:'',clienteId:'',page:0};
+async function chamados(){
+  const [cli,cat,tec]=await Promise.all([api('/clientes'),api('/categorias'),api('/tecnicos')]);
+  const p=new URLSearchParams({page:Q.page,size:10,sort:'id,desc'});
+  ['status','prioridade','clienteId'].forEach(k=>Q[k]&&p.set(k,Q[k]));
+  const d=await api('/chamados?'+p);
+  M.innerHTML=`<h1>Chamados</h1>
+  <div class="card"><div class="row" id="fl"><label>Status<select name="status"><option value="">Todos</option>${opts(ST,Q.status)}</select></label>
+  <label>Prioridade<select name="prioridade"><option value="">Todas</option>${opts(PR,Q.prioridade)}</select></label>
+  <label>Cliente<select name="clienteId"><option value="">Todos</option>${opts(cli,Q.clienteId,c=>c.nome)}</select></label></div></div>
+  <div class="card"><table><tr><th>#</th><th>Título</th><th>Cliente</th><th>Prioridade</th><th>Status</th><th>Técnico</th></tr>
+  ${d.content.map(c=>`<tr><td>${c.id}</td><td><a href="#chamado/${c.id}">${E(c.titulo)}</a></td><td>${E(c.cliente?.nome)}</td><td>${chip(c.prioridade)}</td><td>${chip(c.status)}</td><td>${E(c.tecnico?.nome||'Sem técnico')}</td></tr>`).join('')||'<tr><td colspan="6">Nenhum chamado com esses filtros.</td></tr>'}</table>
+  <div class="row" style="margin-top:12px"><button id="pv"${Q.page<1?' disabled':''}>Anterior</button><span>Página ${Q.page+1} de ${Math.max(d.totalPages,1)}</span><button id="nx"${Q.page+1>=d.totalPages?' disabled':''}>Próxima</button></div></div>
+  <details class="card"><summary>Abrir novo chamado</summary><form id="nf" style="margin-top:12px">
+  <label>Título<input name="titulo" required></label><label>Descrição<textarea name="descricao" rows="3" required></textarea></label>
+  <div class="row"><label>Cliente<select name="cliente">${opts(cli,'',c=>c.nome)}</select></label><label>Categoria<select name="categoria">${opts(cat,'',c=>c.nome)}</select></label>
+  <label>Prioridade<select name="prioridade">${opts(PR,'MEDIA')}</select></label><label>Técnico<select name="tecnico"><option value="">Sem técnico</option>${opts(tec,'',t=>t.nome)}</select></label></div>
+  <div class="row" style="margin-top:10px"><button class="p">Abrir chamado</button></div></form></details>`;
+  $('#fl').onchange=e=>{Q[e.target.name]=e.target.value;Q.page=0;chamados()};
+  $('#pv').onclick=()=>{Q.page--;chamados()};$('#nx').onclick=()=>{Q.page++;chamados()};
+  $('#nf').onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));
+    const b={titulo:f.titulo,descricao:f.descricao,prioridade:f.prioridade,status:'ABERTO',cliente:{id:+f.cliente},categoria:{id:+f.categoria}};
+    if(f.tecnico)b.tecnico={id:+f.tecnico};
+    try{const c=await api('/chamados',J('POST',b));location.hash='chamado/'+c.id}catch(x){toast(x.message,1)}}}
+
+/* Detalhe: status, técnico e comentários */
+async function detalhe(id){
+  const [c,tec,cli,cat]=await Promise.all([api('/chamados/'+id),api('/tecnicos'),api('/clientes'),api('/categorias')]);
+  const nome=(a,i)=>a.find(x=>x.id==i)?.nome||'Não informado',fechado=c.status=='FECHADO',dis=fechado?' disabled':'';
+  M.innerHTML=`<p><a href="#chamados">Voltar aos chamados</a></p><h1>#${c.id} ${E(c.titulo)}</h1>
+  <div class="g g2"><div><div class="card"><p>${E(c.descricao)}</p><p>${chip(c.prioridade)} ${chip(c.status)}</p>
+  <p class="mute">Cliente: ${E(nome(cli,c.clienteId))}. Categoria: ${E(nome(cat,c.categoriaId))}. Aberto em ${E(c.dataAbertura||c.data_abertura||'')}${(c.dataFechamento||c.data_fechamento)?'; fechado em '+E(c.dataFechamento||c.data_fechamento):''}.</p></div>
+  <details class="card"><summary>Editar chamado</summary><form id="ef" style="margin-top:12px"><label>Título<input name="titulo" value="${E(c.titulo)}" required></label><label>Descrição<textarea name="descricao" rows="3" required>${E(c.descricao)}</textarea></label>
+  <div class="row"><label>Categoria<select name="categoria">${opts(cat,c.categoriaId,x=>x.nome)}</select></label><label>Prioridade<select name="prioridade">${opts(PR,c.prioridade)}</select></label></div>
+  <div class="row" style="margin-top:10px"><button class="p"${dis}>Salvar alterações</button></div></form></details>
+  <div class="card"><h2>Comentários</h2>${(c.comentarios||[]).map(m=>`<p><b>${E(m.autor)}</b> <span class="mute">${E(m.data)}</span> <button data-ce="${m.id}">Editar</button> <button class="d" data-cd="${m.id}">Excluir</button><br>${E(m.texto)}</p>`).join('')||'<p class="mute">Nenhum comentário ainda.</p>'}
+  <form id="cf"><label>Autor<input name="autor" required></label><label>Comentário<textarea name="texto" rows="2" required></textarea></label><button class="p">Enviar comentário</button></form></div></div>
+  <div class="card"><h2>Atendimento</h2><label>Status<select id="st"${dis}>${opts(ST,c.status)}</select></label><button id="ss"${dis}>Salvar status</button>
+  <label style="margin-top:14px">Técnico<select id="tc"${dis}><option value="">Escolha um técnico</option>${opts(tec,c.tecnicoId,t=>t.nome)}</select></label><button id="ta"${dis}>Atribuir técnico</button>
+  ${fechado?'<p class="mute">Chamado fechado: não pode mais ser alterado.</p>':''}</div></div>`;
+  const go=async(fn,msg)=>{try{await fn();toast(msg);detalhe(id)}catch(x){toast(x.message,1)}};
+  $('#ss').onclick=()=>go(()=>api(`/chamados/${id}/status`,J('PATCH',{status:$('#st').value})),'Status atualizado');
+  $('#ta').onclick=()=>go(()=>api(`/chamados/${id}/atribuir`,J('PATCH',{tecnicoId:+$('#tc').value})),'Técnico atribuído');
+  $('#ef').onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));
+    const b={titulo:f.titulo,descricao:f.descricao,prioridade:f.prioridade,status:c.status,cliente:{id:c.clienteId},categoria:{id:+f.categoria}};
+    if(c.tecnicoId)b.tecnico={id:c.tecnicoId};
+    go(()=>api('/chamados/'+id,J('PUT',b)),'Chamado atualizado')};
+  M.querySelectorAll('[data-ce]').forEach(b=>b.onclick=()=>{const m=c.comentarios.find(x=>x.id==b.dataset.ce),t=prompt('Editar comentário',m.texto);
+    if(t&&t.trim())go(()=>api('/comentarios/'+m.id,J('PUT',{chamado:{id:+id},texto:t,autor:m.autor,data:m.data})),'Comentário atualizado')});
+  M.querySelectorAll('[data-cd]').forEach(b=>b.onclick=()=>{if(confirm('Excluir este comentário?'))go(()=>api('/comentarios/'+b.dataset.cd,{method:'DELETE'}),'Comentário excluído')});
+  $('#cf').onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));
+    go(()=>api('/comentarios',J('POST',{...f,data:new Date().toISOString().slice(0,10),chamado:{id:+id}})),'Comentário enviado')}}
+
+/* Rotas por hash */
+const ROTAS={'':dash,painel:dash,chamados,clientes:()=>crud('clientes'),categorias:()=>crud('categorias'),tecnicos:()=>crud('tecnicos')};
+async function route(){
+  const [h,id]=location.hash.slice(1).split('/');
+  document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.hash=='#'+(h=='chamado'?'chamados':h||'painel')));
+  try{h=='chamado'?await detalhe(id):await(ROTAS[h]||dash)()}
+  catch(x){M.innerHTML=`<div class="card"><b>Não foi possível carregar.</b><p>${E(x.message)}. Confira se a API está rodando em http://localhost:8080.</p></div>`}}
+addEventListener('hashchange',route);route();
+</script></body></html>
